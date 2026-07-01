@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,7 @@ namespace NZWalksAPIs.Controllers
         private readonly IRegionRepository _regionRepository;
         private readonly IMapper _mapper;
 
-        public RegionsController(NZWalkDBContext nZWalkDB ,IRegionRepository regionRepository,
+        public RegionsController(NZWalkDBContext nZWalkDB, IRegionRepository regionRepository,
             IMapper mapper)
         {
             nZWalkDBContext = nZWalkDB;
@@ -29,11 +30,13 @@ namespace NZWalksAPIs.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles= "Reader")]
+
         public async Task<IActionResult> GetAll()
         {
             var regionsdomain = await _regionRepository.GetAllAsync();
-          
-            var regiondto  = _mapper.Map<List<Regiondto>>(regionsdomain);
+
+            var regiondto = _mapper.Map<List<Regiondto>>(regionsdomain);
 
             return Ok(regiondto);
 
@@ -41,6 +44,8 @@ namespace NZWalksAPIs.Controllers
 
         [HttpGet]
         [Route("{id:Guid}")]
+        [Authorize(Roles = "Reader")]
+
         public async Task<IActionResult> GetById(Guid id)
         {
             var region = await _regionRepository.GetByIdAsyn(id);
@@ -54,7 +59,9 @@ namespace NZWalksAPIs.Controllers
 
         [HttpPost]
         [ValidateModel]
-        public async  Task<IActionResult> Create([FromBody] AddRegionRequestDto requestdto)
+        [Authorize (Roles = "Writer")]
+
+        public async Task<IActionResult> Create([FromBody] AddRegionRequestDto requestdto)
         {
             var regiondomainrequest = _mapper.Map<Regions>(requestdto);
             regiondomainrequest = await _regionRepository.CreateAsync(regiondomainrequest);
@@ -66,29 +73,34 @@ namespace NZWalksAPIs.Controllers
         [HttpPut]
         [Route("{id:Guid}")]
         [ValidateModel]
+        [Authorize(Roles = "Writer")]
+
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] Updateegiondto requestdto)
-        { 
+        {
             var regiondomainModel = _mapper.Map<Regions>(requestdto);
-            regiondomainModel =  await _regionRepository.UpdateAsync(id, regiondomainModel);
+            regiondomainModel = await _regionRepository.UpdateAsync(id, regiondomainModel);
             if (regiondomainModel == null)
             {
                 return NotFound();
-            };
+            }
+            ;
             var regiondto = _mapper.Map<Regiondto>(regiondomainModel);
             return Ok(regiondto);
         }
 
         [HttpDelete]
         [Route("{id:Guid}")]
-        public async Task<IActionResult> Delete([FromRoute] Guid id )
+        [Authorize(Roles = "Writer,Reader")]
+
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var regiondomainModel = await _regionRepository.DeleteAsync(id);    
-            if(regiondomainModel == null)
+            var regiondomainModel = await _regionRepository.DeleteAsync(id);
+            if (regiondomainModel == null)
             {
                 return NotFound();
             }
             var regiondto = _mapper.Map<Regiondto>(regiondomainModel);
-            return Ok(regiondto); 
+            return Ok(regiondto);
 
         }
     }

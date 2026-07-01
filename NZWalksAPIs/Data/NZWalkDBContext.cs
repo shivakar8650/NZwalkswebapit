@@ -8,7 +8,7 @@ namespace NZWalksAPIs.Data
     public class NZWalkDBContext : DbContext   
     {
 
-        public NZWalkDBContext(DbContextOptions dbcontextoption): base(dbcontextoption)
+        public NZWalkDBContext(DbContextOptions<NZWalkDBContext> dbcontextoption): base(dbcontextoption)
         {
                 
         }
@@ -17,6 +17,8 @@ namespace NZWalksAPIs.Data
 
         public  DbSet<Regions> Regionspoperties { get; set; }
         public  DbSet<Walks> WalksProperties { get; set; }
+
+        public  DbSet<Image> Images { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
